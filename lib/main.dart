@@ -55,16 +55,26 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text(
               'You have pushed the button this many times:',
             ),
-            StreamBuilder<int>(
+            StreamBuilder<MyState>(
                 // use Stream builder to watch data changes in the stream
                 stream: myBloc.stateStream, // defining the stream
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    _counter = snapshot.data ?? 0;
-                    return Text(
-                      '${snapshot.data}',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    );
+                    MyState? state = snapshot.data;
+                    if (state is IncrementState) {
+                      _counter = state.value;
+                      return Text(
+                        'Incremented: $_counter',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      );
+                    } else if (state is DecrementState) {
+                      _counter = state.value;
+                      return Text(
+                        'Decremented: $_counter',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      );
+                    } else
+                      return Container();
                   } else {
                     return Text("0",
                         style: Theme.of(context).textTheme.headlineMedium);
@@ -73,12 +83,29 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          myBloc.eventStreamSink.add(_counter); // pushing data to the sink
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: SizedBox(
+        width: 200,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                myBloc.eventStreamSink.add(IncrementEvent(
+                    value: _counter)); // pushing data to the sink
+              },
+              tooltip: 'Increment',
+              child: const Icon(Icons.add),
+            ),
+            FloatingActionButton(
+              onPressed: () {
+                myBloc.eventStreamSink.add(DecrementEvent(
+                    value: _counter)); // pushing data to the sink
+              },
+              tooltip: 'Decrement',
+              child: const Icon(Icons.remove),
+            ),
+          ],
+        ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
